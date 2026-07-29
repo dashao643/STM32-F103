@@ -1,0 +1,33 @@
+# 资源文件
+assets/
+
+# cmake编译产物
+build/
+
+# vscode配置
+.vscode/
+.claude/
+.settings/
+
+# keil编译产物
+mdk/Objects/*.iex
+mdk/Objects/*.dep
+mdk/Objects/*.axf
+mdk/Objects/*.htm
+mdk/Objects/*.hex
+mdk/Objects/*.lnp
+mdk/Objects/*.sct
+mdk/Objects/*.crf
+mdk/Objects/*.d
+mdk/Objects/*.o
+mdk/Listings/*.map
+mdk/Listings/*.lst
+
+# keil配置
+mdk/DebugConfig/*.dbgconf
+mdk/*.uvguix.*
+mdk/*.scvd
+
+# 自定义文件
+claude.md
+record.txt
