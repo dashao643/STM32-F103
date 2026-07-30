@@ -1,6 +1,8 @@
 #include "stm32f1xx_hal.h"
 #include "led.h"
 
+#include <stdbool.h>
+
 void SystemClock_Config(void);
 void Error_Handler(void);
 
@@ -13,7 +15,8 @@ int main(void)
 
 	uint32_t timer = HAL_GetTick();
 
-	while(1) {
+	while(1) 
+	{
 		if(HAL_GetTick() - timer > 500) {
 			timer = HAL_GetTick();
 			// LED_RED_Toggle();

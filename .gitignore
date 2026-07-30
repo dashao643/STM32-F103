@@ -4,9 +4,11 @@ assets/
 # cmake编译产物
 build/
 
+# cmake本地预设文件
+CMakeUserPresets.json
+
 # vscode配置
 .vscode/
-.claude/
 .settings/
 
 # keil编译产物
@@ -28,6 +30,7 @@ mdk/DebugConfig/*.dbgconf
 mdk/*.uvguix.*
 mdk/*.scvd
 
-# 自定义文件
+# claude code配置
+.claude/
 claude.md
 record.txt
