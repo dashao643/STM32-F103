@@ -48,3 +48,11 @@ add_custom_command(TARGET ${PROJECT_NAME}
     COMMAND ${CMAKE_OBJCOPY} -O ihex $<TARGET_FILE:${PROJECT_NAME}> ${PROJECT_NAME}.hex
     COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${PROJECT_NAME}> ${PROJECT_NAME}.bin
 )
+
+# cmake --build .\build\debug\ --target flash
+# 连接 stlink 后, 编译 + 下载 .elf 程序
+add_custom_target(flash
+    COMMAND STM32_Programmer_CLI.exe -c port=SWD freq=4000 mode=UR reset=HWrst
+        -w "$<TARGET_FILE:${PROJECT_NAME}>" -v -rst
+    DEPENDS ${PROJECT_NAME}
+)
