@@ -26,7 +26,6 @@ static void idleProcess(void)
         __HAL_UART_CLEAR_IDLEFLAG(&uart1);
 
         rxSize = UART1_RX_BUFF_MAX_SIZE - __HAL_DMA_GET_COUNTER(uart1.hdmarx);
-
         rxFlag = true;
 
         HAL_UART_DMAStop(&uart1);

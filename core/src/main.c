@@ -7,6 +7,9 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+// #define RTC_LSE_ON
+#define RTC_LSI_ON
+
 void SystemClock_Config(void);
 void Error_Handler(void);
 
@@ -24,54 +27,50 @@ int main(void)
 
 	// uint32_t timer = HAL_GetTick();
 
-	UART1_Transmit_DMA(data, sizeof(data));
-
 	printf("f1 project\n");
 
 	while(1) 
 	{
+		// 回传数据
 		if(*UART1_GetRxFlag()) {
 			*UART1_GetRxFlag() = false;
 			uint16_t size;
 			uint8_t *data = UART1_GetRxBuf(&size);
 			UART1_Transmit_DMA(data, size);
-			// printf("recevie\n");
 		}
-		// UART1_Task();
-		// if(HAL_GetTick() - timer > 500) {
-		// 	timer = HAL_GetTick();
-		// 	LED_RED_Toggle();
-		// 	// LED_GREEN_Toggle();
-		// 	// LED_BLUE_Toggle();
-		// 	// LED_PC13_Toggle();
-		// }
-		// HAL_Delay(500);
 	}
 }
 
 void SystemClock_Config(void)
 {
+	// 初始化晶振
 	RCC_OscInitTypeDef RCC_OscInitStruct = {0};
 
-	// RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE
-	// 						|RCC_OSCILLATORTYPE_LSE;
-	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-	RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-	RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
-	// RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-	RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+#if defined RTC_LSE_ON
+	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_LSE;
+	RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+	RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
+#elif defined RTC_LSI_ON
+	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_LSI;
+	RCC_OscInitStruct.LSEState = RCC_LSE_OFF;
 	RCC_OscInitStruct.LSIState = RCC_LSI_ON;
+#endif
+
+	RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+	RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;		// 8MHz
+	RCC_OscInitStruct.HSIState = RCC_HSI_OFF;
 	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
 	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-	RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
+	RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;				// 72MHz
 
 	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
 		Error_Handler();
 
+	// 初始化系统主时钟
 	RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-								|RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
+								| RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
 	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
 	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
 	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
@@ -80,10 +79,15 @@ void SystemClock_Config(void)
 	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
 		Error_Handler();
 
+	// 初始化外设时钟
 	RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
-	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_ADC;
+	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC | RCC_PERIPHCLK_ADC;
+#if defined RTC_LSE_ON
 	PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
+#elif defined RTC_LSI_ON
+	PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
+#endif
 	PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV6;
 
 	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)

@@ -342,7 +342,7 @@ HAL_StatusTypeDef HAL_RCC_DeInit(void)
   *         first and then HSE On or HSE Bypass.
   * @retval HAL status
   */
-HAL_StatusTypeDef HAL_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct)
+HAL_StatusTypeDef HAL_RCC_OscConfig(RCC_OscInitTypeDef *RCC_OscInitStruct)
 {
   uint32_t tickstart;
   uint32_t pll_config;

@@ -931,6 +931,16 @@
               <FileType>5</FileType>
               <FilePath>..\core\bsp\led.h</FilePath>
             </File>
+            <File>
+              <FileName>general.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\core\bsp\general.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart1.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\core\bsp\uart1.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>
