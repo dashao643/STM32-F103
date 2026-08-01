@@ -10,7 +10,7 @@
 void SystemClock_Config(void);
 void Error_Handler(void);
 
-static uint8_t data[] = {0x01, 0x02, 0x03, 0x04, 0x05};
+// static uint8_t data[] = {0x01, 0x02, 0x03, 0x04, 0x05};
 
 int main(void)
 {
@@ -22,24 +22,29 @@ int main(void)
 	LED_Init();
 	UART1_Init();
 
-	// uint16_t test;
-	uint32_t timer = HAL_GetTick();
+	// uint32_t timer = HAL_GetTick();
 
-	UART1_Transmit(data, sizeof(data), 500);
-	HAL_Delay(1000);
-	UART1_Transmit(data, sizeof(data), 500);
+	UART1_Transmit_DMA(data, sizeof(data));
 
-	// UART1_Transmit_DMA(data, 5);
+	printf("f1 project\n");
 
 	while(1) 
 	{
-		if(HAL_GetTick() - timer > 500) {
-			timer = HAL_GetTick();
-			LED_RED_Toggle();
-			// LED_GREEN_Toggle();
-			// LED_BLUE_Toggle();
-			// LED_PC13_Toggle();
+		if(*UART1_GetRxFlag()) {
+			*UART1_GetRxFlag() = false;
+			uint16_t size;
+			uint8_t *data = UART1_GetRxBuf(&size);
+			UART1_Transmit_DMA(data, size);
+			// printf("recevie\n");
 		}
+		// UART1_Task();
+		// if(HAL_GetTick() - timer > 500) {
+		// 	timer = HAL_GetTick();
+		// 	LED_RED_Toggle();
+		// 	// LED_GREEN_Toggle();
+		// 	// LED_BLUE_Toggle();
+		// 	// LED_PC13_Toggle();
+		// }
 		// HAL_Delay(500);
 	}
 }

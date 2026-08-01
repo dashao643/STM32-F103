@@ -4,10 +4,6 @@ enable_language(C ASM)
 
 # Create f1_drivers static library
 add_library(f1_drivers OBJECT
-    ${CMAKE_CURRENT_SOURCE_DIR}/../startup_stm32f103xb.s
-    ${CMAKE_CURRENT_SOURCE_DIR}/../core/src/system_stm32f1xx.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../core/src/stm32f1xx_hal_msp.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../core/src/stm32f1xx_it.c
     ${CMAKE_CURRENT_SOURCE_DIR}/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio_ex.c
     ${CMAKE_CURRENT_SOURCE_DIR}/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c
     ${CMAKE_CURRENT_SOURCE_DIR}/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.c

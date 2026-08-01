@@ -19,6 +19,11 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 )
 
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
+    startup_stm32f103xb.s
+    core/src/system_stm32f1xx.c
+    core/src/stm32f1xx_it.c
+    core/src/stm32f1xx_hal_msp.c
+
     core/src/main.c
     core/bsp/led.c
     core/bsp/general.c

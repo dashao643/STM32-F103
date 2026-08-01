@@ -5,11 +5,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define UARTX_TIMEOUT 100
-// #define UARTX_PRINTF            &huart1
+#define UART1_PRINTF
 
-#ifdef UARTX_PRINTF
-#include "uart.h"
+#ifdef UART1_PRINTF
+#include "uart1.h"
 #endif
 
 // clang-format off
@@ -51,13 +50,34 @@ void Delay_Us(__IO uint32_t delay)
 
 #if defined(__GNUC__)
 // ========== CMake / GCC 编译器用 ==========
+#include <sys/stat.h>
+
 int _write(int file, char *ptr, int len)
 {
-#ifdef UARTX_PRINTF
-    HAL_UART_Transmit(UARTX_PRINTF, (uint8_t *)ptr, len, UARTX_TIMEOUT);
+#ifdef UART1_PRINTF
+    HAL_UART_Transmit(UART1_GetHandle(), (uint8_t *)ptr, len, UART1_TX_TIMEOUT_MS);
 #endif
     return len;
 }
+
+void *_sbrk(int incr) {
+    extern char _end;
+    static char *heap_end;
+    char *prev;
+
+    if (heap_end == NULL)
+        heap_end = &_end;
+    prev = heap_end;
+    heap_end += incr;
+    return (void *)prev;
+}
+
+int _close(int file)   { (void)file; return -1; }
+int _fstat(int file, struct stat *st) { (void)file; (void)st; return 0; }
+int _isatty(int file)  { (void)file; return 1; }
+int _lseek(int file, int ptr, int dir) { (void)file; (void)ptr; (void)dir; return 0; }
+int _read(int file, char *ptr, int len) { (void)file; (void)ptr; (void)len; return 0; }
+void _exit(int status) { (void)status; while(1); }
 
 #elif defined(__CC_ARM) || defined(__ARMCC_VERSION)
 // ========== MDK-ARM 编译器用 ==========
@@ -91,7 +111,7 @@ FILE __stdout;
 /* 重定向 fputc —— printf 最终会调用这个函数 */
 int fputc(int ch, FILE *f)
 {
-    HAL_UART_Transmit(UARTX_PRINTF, (uint8_t *)&ch, 1, UARTX_TIMEOUT);
+    HAL_UART_Transmit(UART1_GetHandle(), (uint8_t *)&ch, 1, UART1_TX_TIMEOUT_MS);
 
     return ch;
 }
