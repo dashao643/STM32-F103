@@ -1,31 +1,39 @@
 #include "stm32f1xx_hal.h"
+#include "general.h"
+#include "uart1.h"
 #include "led.h"
 
+#include <stdint.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 void SystemClock_Config(void);
 void Error_Handler(void);
-void NVIC_SetVectorTable(uint32_t offset)
-{
-  SCB->VTOR = offset;
-  __enable_irq();
-}
+
+static uint8_t data[] = {0x01, 0x02, 0x03, 0x04, 0x05};
 
 int main(void)
 {
-	// NVIC_SetVectorTable(FLASH_BASE | 0x4000);
+	// NVIC_SetVectorTable(FLASH_BASE | BOOTLOADER_SIZE);
 
 	HAL_Init();
 	SystemClock_Config();
 
 	LED_Init();
+	UART1_Init();
 
 	// uint16_t test;
 	uint32_t timer = HAL_GetTick();
 
+	UART1_Transmit(data, sizeof(data), 500);
+	HAL_Delay(1000);
+	UART1_Transmit(data, sizeof(data), 500);
+
+	// UART1_Transmit_DMA(data, 5);
+
 	while(1) 
 	{
-		if(HAL_GetTick() - timer > 100) {
+		if(HAL_GetTick() - timer > 500) {
 			timer = HAL_GetTick();
 			LED_RED_Toggle();
 			// LED_GREEN_Toggle();
@@ -39,8 +47,6 @@ int main(void)
 void SystemClock_Config(void)
 {
 	RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-	RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-	RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
 	// RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE
 	// 						|RCC_OSCILLATORTYPE_LSE;
@@ -57,6 +63,8 @@ void SystemClock_Config(void)
 	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
 		Error_Handler();
 
+	RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+
 	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
 								|RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
 	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
@@ -66,6 +74,8 @@ void SystemClock_Config(void)
 
 	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
 		Error_Handler();
+
+	RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
 	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_ADC;
 	PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;

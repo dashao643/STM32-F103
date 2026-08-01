@@ -19,12 +19,10 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 )
 
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    startup_stm32f103xb.s
-    core/src/system_stm32f1xx.c
-    core/src/stm32f1xx_hal_msp.c
-    core/src/stm32f1xx_it.c
     core/src/main.c
     core/bsp/led.c
+    core/bsp/general.c
+    core/bsp/uart1.c
 )
 
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
@@ -49,7 +47,7 @@ add_custom_command(TARGET ${PROJECT_NAME}
     COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${PROJECT_NAME}> ${PROJECT_NAME}.bin
 )
 
-# cmake --build .\build\debug\ --target flash
+# cmake --build .\build\debug --target flash
 # 连接 stlink 后, 编译 + 下载 .elf 程序
 add_custom_target(flash
     COMMAND STM32_Programmer_CLI.exe -c port=SWD freq=4000 mode=UR reset=HWrst
