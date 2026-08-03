@@ -15,6 +15,7 @@ add_library(f1_drivers OBJECT
     ${CMAKE_CURRENT_SOURCE_DIR}/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash.c
     ${CMAKE_CURRENT_SOURCE_DIR}/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash_ex.c
     ${CMAKE_CURRENT_SOURCE_DIR}/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c
 )
 
 target_compile_definitions(f1_drivers PUBLIC
