@@ -34,6 +34,8 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     core/bsp/ssd1306.c
 
     core/mid/modbus.c
+
+    core/app/modbus_app.c
 )
 
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE

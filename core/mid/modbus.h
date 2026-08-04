@@ -35,17 +35,17 @@
 
 /********************************** 错误码 **********************************/
 #define MODBUS_FUNC_ERROR                   0x01        // 非法功能码
-#define MODBUS_REGS_ARR_ERROR               0x02        // 非法寄存器地址
+#define MODBUS_REGS_ADDR_ERROR              0x02        // 非法寄存器地址
 #define MODBUS_REGS_CNT_ERROR               0x03        // 非法寄存器数量
 #define MODBUS_OP_DATA_ERROR                0x04        // 非法操作数
-
+#define MODBUS_EXECUTE_ERROR                0x05        // 执行出错
 
 typedef struct {
     uint8_t func;
     bool isRead;
-    uint16_t regArr;
+    uint16_t regAddr;
     uint16_t regCnt;
-    uint8_t data;
+    uint8_t opData;
     uint16_t txIndex;
 } Modbus_RecordTypeDef;
 
