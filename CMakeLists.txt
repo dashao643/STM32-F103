@@ -33,7 +33,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     core/bsp/i2c_s.c
     core/bsp/ssd1306.c
 
-    # core/mid/modbus.c
+    core/mid/modbus.c
 )
 
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
@@ -42,6 +42,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     core/app
     core/mid
     core/bsp
+    assets
 )
 
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE

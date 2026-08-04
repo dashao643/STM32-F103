@@ -11,6 +11,7 @@
 
 void UART1_Init(void);
 void UART1_MspInit(UART_HandleTypeDef *huart);
+
 HAL_StatusTypeDef UART1_Transmit(const uint8_t *data, uint16_t size);
 HAL_StatusTypeDef UART1_Transmit_DMA(const uint8_t *data, uint16_t size);
 

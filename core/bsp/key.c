@@ -22,7 +22,7 @@ typedef struct {
     uint16_t preKey;
     uint16_t curKey;
     uint32_t scanTimer;
-} KeyTypeDef;
+} Key_TypeDef;
 
 static GPIO_PortPinTypeDef keyPortPin[KEY_CNT] = { 
     { KEY_1_GPIO_Port, KEY_1_Pin }, 
@@ -31,7 +31,7 @@ static GPIO_PortPinTypeDef keyPortPin[KEY_CNT] = {
     { KEY_4_GPIO_Port, KEY_4_Pin } 
 };
 
-static KeyTypeDef key = { 0 };
+static Key_TypeDef key = { 0 };
 
 static uint16_t keyScan(void)
 {

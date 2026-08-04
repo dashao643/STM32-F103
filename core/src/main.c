@@ -4,8 +4,8 @@
 #include "led.h"
 #include "uart1.h"
 #include "ssd1306.h"
-#include "i2c1.h"
 #include "ssd1306_image.h"
+#include "modbus.h"
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -38,11 +38,12 @@ int main(void)
 
 	// SSD1306_ShowString(1, 1, "wo shi 你好");
 	// SSD1306_ShowString(2, 1, "你好大勺,世界dashao");
-	SSD1306_ShowImage(IMAGE_BOQI2);
+	SSD1306_ShowImage(IMAGE_BOQI);
 
 	while(1) 
 	{
 		KeyNumTypeDef keyNum = Key_Read();
+		Modbus_Task();
 
 		if (READ_BIT(keyNum, KEY_1)) {
 			printf("test\n");
@@ -61,12 +62,12 @@ int main(void)
 		} 
 
 		// 回传数据
-		if(*UART1_GetRxFlag()) {
-			*UART1_GetRxFlag() = false;
-			uint16_t size;
-			uint8_t *data = UART1_GetRxBuf(&size);
-			UART1_Transmit_DMA(data, size);
-		}
+		// if(*UART1_GetRxFlag()) {
+		// 	*UART1_GetRxFlag() = false;
+		// 	uint16_t size;
+		// 	uint8_t *data = UART1_GetRxBuf(&size);
+		// 	UART1_Transmit_DMA(data, size);
+		// }
 	}
 }
 
