@@ -6,6 +6,7 @@
 
 // PA9  ------> USART1_TX
 // PA10 ------> USART1_RX
+
 static UART_HandleTypeDef uart1;
 static DMA_HandleTypeDef dmaTx;
 static DMA_HandleTypeDef dmaRx;
