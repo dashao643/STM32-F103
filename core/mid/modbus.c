@@ -50,21 +50,24 @@ static void errorReply(const uint8_t errorCode)
 static bool funcCheck(uint8_t funcCode)
 {
     if(funcCode >= 0x01 && funcCode <= 0x04) {
-        if(size_ != MODBUS_RX_BUFF_MINLENTH)
+        if(size_ != MODBUS_RX_BUFF_MINLENTH) 
             return false;
+        return true;
     }
     else if(funcCode >= 0x05 && funcCode <= 0x06) {
         if(size_ != MODBUS_SINGLE_WRITE_LENTH)
             return false;
+        return true;
     }
     else if(funcCode >= 0x41 && funcCode <= 0x43) {
         if(size_ != MODBUS_RX_BUFF_MINLENTH)
             return false;
+        return true;
     } 
-    else if(funcCode != 0x0F && funcCode != 0x10)
-        return false;
+    else if(funcCode == 0x0F || funcCode == 0x10)
+        return true;
 
-    return true;
+    return false;
 }
 
 static bool frameCheck(void)

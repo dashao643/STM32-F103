@@ -33,6 +33,8 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     core/bsp/i2c_s.c
     core/bsp/ssd1306.c
     core/bsp/rtc.c
+    core/bsp/spi.c
+    core/bsp/w25q64.c
 
     core/mid/modbus.c
 

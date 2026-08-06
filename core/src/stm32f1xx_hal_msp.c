@@ -1,6 +1,7 @@
 #include "stm32f1xx_hal.h"
 #include "uart1.h"
 #include "i2c1.h"
+#include "spi.h"
 #include "rtc.h"
 
 // Initializes the Global MSP.
@@ -28,4 +29,10 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
 void HAL_RTC_MspInit(RTC_HandleTypeDef *hrtc)
 {
     RTC_MspInit(hrtc);
+}
+
+void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi)
+{
+    SPI1_MspInit(hspi);
+    SPI2_MspInit(hspi);
 }

@@ -30,7 +30,7 @@ void RTC_Init(void)
 
     if(RTC_IsConfigured()) return;
 
-    // 设置默认时间
+    // 设置默认时间 2010-1-1
     RTC_DateTypeDef date = {
         .Year = 10,
         .Month = 1,

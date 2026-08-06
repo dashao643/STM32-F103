@@ -3,9 +3,10 @@
 #include "key.h"
 #include "led.h"
 #include "uart1.h"
+#include "w25q64.h"
 #include "rtc.h"
 #include "ssd1306.h"
-#include "ssd1306_image.h"
+// #include "ssd1306_image.h"
 #include "modbus.h"
 
 #include <stdint.h>
@@ -20,6 +21,7 @@ void Error_Handler(void);
 
 
 // static uint8_t data[] = {0x01, 0x02, 0x03, 0x04, 0x05};
+static uint8_t data[4096];
 
 int main(void)
 {
@@ -31,6 +33,7 @@ int main(void)
 	LED_Init();
 	Key_Init();
 	UART1_Init();
+	W25Q64_Init();
 	SSD1306_Init();
 	RTC_Init();
 	// uint32_t timer = HAL_GetTick();
@@ -52,25 +55,27 @@ int main(void)
 			printf("test\n");
 		} 
 		if (READ_BIT(keyNum, KEY_2)) {
-			LED_RED_TOGGLE();
-			// uint8_t data = 0x55;
-			// uint8_t state = I2C1_Mem_Write(0x78, 0x00, 1, &data, 1);
-			// printf("state=%d\n", state);
+			uint8_t state = W25Q64_ReadSector(0, data, 4096);
+			printf("state=%d\n", state);
+
+			for(uint16_t i = 0; i < 4096; i++) {
+				printf("%02X ", data[i]);
+			}
+			printf("\n");
 		} 
 		if (READ_BIT(keyNum, KEY_3)) {
-			LED_RED_TOGGLE();
+			uint8_t page[256];
+
+			for(uint16_t i = 0; i < 256; i++) {
+				page[i] = i;
+			}
+			uint8_t state = W25Q64_WritePage(10, page, 256);
+			printf("state=%d\n", state);
 		} 
 		if (READ_BIT(keyNum, KEY_4)) {
-			LED_RED_TOGGLE();
-		} 
-
-		// 回传数据
-		// if(*UART1_GetRxFlag()) {
-		// 	*UART1_GetRxFlag() = false;
-		// 	uint16_t size;
-		// 	uint8_t *data = UART1_GetRxBuf(&size);
-		// 	UART1_Transmit_DMA(data, size);
-		// }
+			uint8_t state = W25Q64_Check();
+			printf("state=%d\n", state);
+		}
 	}
 }
 
