@@ -21,7 +21,6 @@
 
 void W25Q64_Init(void);
 HAL_StatusTypeDef W25Q64_Check(void);
-// 加个校验通信函数
 
 HAL_StatusTypeDef W25Q64_WriteByte(uint16_t page, uint16_t addrInPage, const uint8_t *data, uint16_t size);
 HAL_StatusTypeDef W25Q64_WritePage(uint16_t page, const uint8_t *data, uint16_t size);

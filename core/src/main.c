@@ -49,7 +49,7 @@ int main(void)
 		Modbus_Task();
 		RTC_Task();
 
-		// æ“¦é™¤å‰4ä¸ªæ‰‡åŒº
+		// æ“¦é™¤å‰?4ä¸ªæ‰‡åŒ?
 		if (READ_BIT(keyNum, KEY_1)) {
 			for(uint8_t i = 0; i < 4; i++) {
 				W25Q64_EraseSector(i);
@@ -65,13 +65,10 @@ int main(void)
 			printf("\n");
 		} 
 		if (READ_BIT(keyNum, KEY_3)) {
-			uint8_t page[256];
-
-			for(uint16_t i = 0; i < 256; i++) {
-				page[i] = i;
-			}
-			uint8_t state = W25Q64_WritePage(10, page, 256);
-			printf("state=%d\n", state);
+			SSD1306_ShowFont(1, 1, "ÊÇhÄãyÂğz´ó*É×2ÓĞ");
+			SSD1306_ShowFont(2, 1, "²ÁËæ·çÄú¸¶¿îÁËÊ²Ã´µÄÂ¬¿¨Ë¹");
+			SSD1306_ShowFont(3, 1, "ÆÆ¸ñ·¢ËÍµ¯Ä»¿ËÀÍ¸£µÂ");
+			SSD1306_ShowFont(4, 1, "Æó¶ìÇëÎÊÈç¹û»áÓ°ÏìÅ©´å");
 		} 
 		if (READ_BIT(keyNum, KEY_4)) {
 			uint8_t state = W25Q64_Check();
@@ -82,7 +79,7 @@ int main(void)
 
 void SystemClock_Config(void)
 {
-	// åˆå§‹åŒ–æ™¶æŒ¯
+	// åˆå§‹åŒ–æ™¶æŒ?
 	RCC_OscInitTypeDef RCC_OscInitStruct = {0};
 
 #if defined RTC_LSE_ON
@@ -119,7 +116,7 @@ void SystemClock_Config(void)
 	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
 		Error_Handler();
 
-	// åˆå§‹åŒ–å¤–è®¾æ—¶é’Ÿ
+	// åˆå§‹åŒ–å¤–è®¾æ—¶é’?
 	RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
 	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC | RCC_PERIPHCLK_ADC;

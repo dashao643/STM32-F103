@@ -6,9 +6,14 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#ifdef GB2312_FONT_LIBRARY
+#include "w25q64.h"
+#endif
+
 // #ifdef I2C_HARDWARE
 // #define SSD1306_INSTANCE            I2C1
 // #endif
+
 
 #if defined I2C_HARDWARE
 #include "i2c1.h"
@@ -162,20 +167,19 @@ void SSD1306_ShowChar(uint8_t row, uint8_t col, char ch)
     writeData(chIdx + 8, 8);
 }
 
-void SSD1306_ShowString(uint8_t row, uint8_t col, const char font[])
+void SSD1306_ShowString(uint8_t row, uint8_t col, const char str[])
 {
-    if (font == NULL) return;
+    if (str == NULL) return;
     if (row == 0 || row > 4) return;
     if (col == 0 || col > 16) return;
 
-    while (*font != '\0') {
+    while (*str != '\0') {
         if (col > 16) return;
-
         // 先看第 bit7 是否为 0, 若为 0 则以 ascii 字符显示
-        if (!(*font & 0x80)) {
-            SSD1306_ShowChar(row, col, *font);
+        if (!(*str & 0x80)) {
+            SSD1306_ShowChar(row, col, *str);
             col++;
-            font++;
+            str++;
             continue;
         }
 
@@ -184,7 +188,7 @@ void SSD1306_ShowString(uint8_t row, uint8_t col, const char font[])
 #if defined SSD1306_FONT_UTF8
         // 统计 utf8 中文所占字节数
         for (uint8_t i = 4; i < 8; i++) {
-            if ((font[0] >> i) & 0x01) {
+            if ((str[0] >> i) & 0x01) {
                 cellCnt = 8 - i;
                 break;
             }
@@ -197,7 +201,7 @@ void SSD1306_ShowString(uint8_t row, uint8_t col, const char font[])
 
         for (uint8_t i = 0; i < CHINESE_FONT_COUNT; i++) {
             // 此文字匹配数组, 显示
-            if (memcmp(font, SSD1306_CHINESE_16x16[i].index, cellCnt) == 0) {
+            if (memcmp(str, SSD1306_CHINESE_16x16[i].index, cellCnt) == 0) {
                 writeCmdPos(row, col, 0);
                 writeData(SSD1306_CHINESE_16x16[i].cell, 16);
 
@@ -216,11 +220,52 @@ void SSD1306_ShowString(uint8_t row, uint8_t col, const char font[])
             writeCmdPos(row, col, 1);
             writeData(SSD1306_ERROR_FONT + 16, 16);
         }
-        // font 指针偏移 cellCnt 字节
-        font += cellCnt;
+        // str 指针偏移 cellCnt 字节
+        str += cellCnt;
         // 移动列指针
         col += 2;
     }
+}
+
+void SSD1306_ShowFont(uint8_t row, uint8_t col, const char font[])
+{
+#ifdef GB2312_FONT_LIBRARY
+    if (font == NULL) return;
+    if (row == 0 || row > 4) return;
+    if (col == 0 || col > 16) return;
+
+    while (*font != '\0') {
+        if (col > 16) return;
+
+        if (!(*font & 0x80)) {
+            SSD1306_ShowChar(row, col, *font);
+            col++;
+            font++;
+            continue;
+        }
+
+        uint8_t high = *font;
+        uint8_t low = *(font + 1);
+
+        uint8_t area = high - 0xA0;   // 区号 (1-94)
+        uint8_t pos  = low - 0xA0;    // 位号 (1-94)
+
+        // 每个区有 94 个汉字
+        uint32_t offset = ((area - 1) * 94 + (pos - 1)) * 32;
+
+        uint8_t cell[32];
+        W25Q64_ReadByte(offset / W25Q64_PAGE_SIZE, offset % W25Q64_PAGE_SIZE, cell, 32);
+
+        writeCmdPos(row, col, 0);
+        writeData(cell, 16);
+
+        writeCmdPos(row, col, 1);
+        writeData(cell + 16, 16);
+
+        font += 2;
+        col += 2;
+    }
+#endif
 }
 
 // 需要传入数据的位数，从低位开始显示，目的是更新显示区域 numLen: 1 - 11
