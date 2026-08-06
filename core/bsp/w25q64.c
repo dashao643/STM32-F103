@@ -146,6 +146,7 @@ void W25Q64_Init(void)
 	SPI2_Init();
 }
 
+// #include <stdio.h>
 HAL_StatusTypeDef W25Q64_Check(void)
 {
     uint8_t byte = 0;
@@ -154,6 +155,8 @@ HAL_StatusTypeDef W25Q64_Check(void)
     cmdTransmit(0x9F);
     receive(&byte, 1);
     W25Q64_CS_HIGH();
+
+    // printf("byte=%d\n", byte);
 
     if(byte == 0xEF) 
         return HAL_OK;

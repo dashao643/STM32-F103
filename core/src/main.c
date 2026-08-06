@@ -26,7 +26,6 @@ static uint8_t data[4096];
 int main(void)
 {
 	// NVIC_SetVectorTable(FLASH_BASE | BOOTLOADER_SIZE);
-
 	HAL_Init();
 	SystemClock_Config();
 
@@ -40,9 +39,8 @@ int main(void)
 
 	printf("f1 project\n");
 	// SSD1306_ShowString(1, 1, "test01");
-
 	// SSD1306_ShowString(1, 1, "wo shi 你好");
-	// SSD1306_ShowString(2, 1, "你好大勺,世界dashao");
+	// SSD1306_ShowString(2, 1, "你好大勺, 世界dashao");
 	// SSD1306_ShowImage(IMAGE_BOQI);
 
 	while(1) 
@@ -51,8 +49,11 @@ int main(void)
 		Modbus_Task();
 		RTC_Task();
 
+		// 擦除前4个扇区
 		if (READ_BIT(keyNum, KEY_1)) {
-			printf("test\n");
+			for(uint8_t i = 0; i < 4; i++) {
+				W25Q64_EraseSector(i);
+			}
 		} 
 		if (READ_BIT(keyNum, KEY_2)) {
 			uint8_t state = W25Q64_ReadSector(0, data, 4096);
@@ -81,7 +82,7 @@ int main(void)
 
 void SystemClock_Config(void)
 {
-	// 初始化晶�?
+	// 初始化晶振
 	RCC_OscInitTypeDef RCC_OscInitStruct = {0};
 
 #if defined RTC_LSE_ON
@@ -118,7 +119,7 @@ void SystemClock_Config(void)
 	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
 		Error_Handler();
 
-	// 初始化外设时�?
+	// 初始化外设时钟
 	RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
 	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC | RCC_PERIPHCLK_ADC;

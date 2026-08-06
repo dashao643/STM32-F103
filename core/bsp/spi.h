@@ -3,10 +3,10 @@
 
 #include "stm32f1xx_hal.h"
 
-#define ENABLE_SPI1
+// #define ENABLE_SPI1
 // #define REMAP_SPI1
 
-// #define ENABLE_SPI2
+#define ENABLE_SPI2
 
 #define SPI_TIMEOUT_MS      200
 

@@ -12,7 +12,7 @@
 // #define DHT11
 #define MY_RTC
 // #define ESP8266
-// #define W25Q64
+#define W25Q64
 
 #ifdef LED
 #include "led.h"
@@ -34,7 +34,7 @@
 #include "w25q64.h"
 #endif
 
-static bool waitFrameTimeout(void) UNUSED_FUNC;
+static HAL_StatusTypeDef waitFrameTimeout(void) UNUSED_FUNC;
 
 // 检验寄存器地址
 bool Modbus_App_RegAddrCheck(uint8_t func, uint16_t addr)
@@ -147,23 +147,20 @@ bool Modbus_App_WriteRegs(uint16_t addr, const uint8_t *value)
     return false;
 }
 
-/**
- * @brief 阻塞等待空闲中断标志位
- * @return true 等待超时
- */
-static bool waitFrameTimeout(void)
+// 阻塞等待空闲中断标志位
+static HAL_StatusTypeDef waitFrameTimeout(void)
 {
     uint8_t timer = 0;
 
     while (timer < W25Q64_WAIT_TIMEOUT) {
         if (*UART1_GetRxFlag()) {
             *UART1_GetRxFlag() = false;
-            return false;
+            return HAL_OK;
         }
         HAL_Delay(1);
         timer++;
     }
-    return true;
+    return HAL_TIMEOUT;
 }
 
 // basePage: 0-65535
@@ -175,14 +172,16 @@ bool Modbus_App_W25Q64(uint16_t basePage, uint16_t pageCnt)
 
     int16_t sectorIdxLast = -1;
     while (curTimes < pageCnt) {
-        Modbus_Transmit(&ack, 1);
+        UART1_Transmit(&ack, 1);
         // 清除帧结束标志, 准备接收数据
-        Modbus_Get_UART()->frameEnd = false;
+        *UART1_GetRxFlag() = false;
 
-        if (waitFrameTimeout())
+        if (waitFrameTimeout() == HAL_TIMEOUT)
             return false;
-        // printf("size=%d\n", Modbus_Get_UART()->rxSize);
-        if (Modbus_Get_UART()->rxSize != 256)
+
+        uint16_t rxSize;
+        UART1_GetRxBuf(&rxSize);
+        if (rxSize != 256)
             return false;
 
         // 第一次跨页写的时候, 先执行页擦除
@@ -192,15 +191,13 @@ bool Modbus_App_W25Q64(uint16_t basePage, uint16_t pageCnt)
             sectorIdxLast = sectorIdx;
             // printf("exec erase\n");
         }
-        W25Q64_WritePage(basePage, Modbus_Get_UART()->rxBuf, 256);
+        W25Q64_WritePage(basePage, UART1_GetRxBuf(&rxSize), 256);
         basePage++;
         curTimes++;
     }
-    Modbus_Transmit(&ack, 1);
+    UART1_Transmit(&ack, 1);
 
-    // 通知状态机继续推进到 REPLY → RESET
-    Modbus_Get_UART()->frameEnd = true;
-    return true
+    return true;
 #endif
     return false;
 }
