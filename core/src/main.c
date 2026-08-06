@@ -3,6 +3,7 @@
 #include "key.h"
 #include "led.h"
 #include "uart1.h"
+#include "rtc.h"
 #include "ssd1306.h"
 #include "ssd1306_image.h"
 #include "modbus.h"
@@ -17,6 +18,7 @@
 void SystemClock_Config(void);
 void Error_Handler(void);
 
+
 // static uint8_t data[] = {0x01, 0x02, 0x03, 0x04, 0x05};
 
 int main(void)
@@ -30,7 +32,7 @@ int main(void)
 	Key_Init();
 	UART1_Init();
 	SSD1306_Init();
-
+	RTC_Init();
 	// uint32_t timer = HAL_GetTick();
 
 	printf("f1 project\n");
@@ -38,12 +40,13 @@ int main(void)
 
 	// SSD1306_ShowString(1, 1, "wo shi 你好");
 	// SSD1306_ShowString(2, 1, "你好大勺,世界dashao");
-	SSD1306_ShowImage(IMAGE_BOQI);
+	// SSD1306_ShowImage(IMAGE_BOQI);
 
 	while(1) 
 	{
 		KeyNumTypeDef keyNum = Key_Read();
 		Modbus_Task();
+		RTC_Task();
 
 		if (READ_BIT(keyNum, KEY_1)) {
 			printf("test\n");

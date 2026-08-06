@@ -10,7 +10,7 @@
 
 #define LED
 // #define DHT11
-// #define MY_RTC
+#define MY_RTC
 // #define ESP8266
 // #define W25Q64
 

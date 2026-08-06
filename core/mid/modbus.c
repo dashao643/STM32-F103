@@ -61,7 +61,7 @@ static bool funcCheck(uint8_t funcCode)
         if(size_ != MODBUS_RX_BUFF_MINLENTH)
             return false;
     } 
-    else if(funcCode != 0x0F || funcCode != 0x10)
+    else if(funcCode != 0x0F && funcCode != 0x10)
         return false;
 
     return true;
