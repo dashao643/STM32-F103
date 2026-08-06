@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <led.h>
 
 #ifdef MODBUS_UART
 #include "uart1.h"
@@ -59,7 +60,9 @@ static bool funcCheck(uint8_t funcCode)
     else if(funcCode >= 0x41 && funcCode <= 0x43) {
         if(size_ != MODBUS_RX_BUFF_MINLENTH)
             return false;
-    }
+    } 
+    else if(funcCode != 0x0F || funcCode != 0x10)
+        return false;
 
     return true;
 }
@@ -97,38 +100,107 @@ static bool frameCheck(void)
 
     // register address check
     record_.regAddr = (rxBuf_[2] << 8) | rxBuf_[3];
-    // if(!Modbus_App_RegAddrCheck(record_.regAddr)) {
-    //     errorReply(MODBUS_REGS_ADDR_ERROR);
-    //     return false;
-    // }
+    if(!Modbus_App_RegAddrCheck(record_.func, record_.regAddr)) {
+        errorReply(MODBUS_REGS_ADDR_ERROR);
+        return false;
+    }
 
     // register count check
     record_.regCnt = (rxBuf_[4] << 8) | rxBuf_[5];
-    // if(!Modbus_App_RegCntCheck(record_.regAddr, record_.regCnt)) {
-    //     errorReply(MODBUS_REGS_CNT_ERROR);
-    //     return false;
-    // }
+    if(!Modbus_App_RegCntCheck(record_.func, record_.regCnt)) {
+        errorReply(MODBUS_REGS_CNT_ERROR);
+        return false;
+    }
 
     // write cmd, operate data check
-    // if(!record_.isRead) {
-    //     record_.opData = rxBuf_[6];
-    //     if(!Modbus_App_OpDataCheck(record_.regAddr, record_.opData)) {
-    //         errorReply(MODBUS_OP_DATA_ERROR);
-    //         return false;
-    //     }
-    // }
+    if(!record_.isRead) {
+        record_.opData = rxBuf_[6];
+        if(!Modbus_App_OpDataCheck(record_.func, record_.regCnt, record_.opData)) {
+            errorReply(MODBUS_OP_DATA_ERROR);
+            return false;
+        }
+    }
 
     return true;
 }
 
 static bool frameExecute(void)
 {
-    // if()
+    if(record_.isRead) return true;
+
+    if(record_.func == MODBUS_FUNC_WRITE_SINGLE_COIL) {
+        return Modbus_App_WriteCoil(record_.regAddr, record_.opData);
+    } 
+    else if(record_.func == MODBUS_FUNC_WRITE_SINGLE_REG) {
+        
+    } 
+    else if(record_.func == MODBUS_FUNC_WRITE_MULTI_COILS) {
+
+    } 
+    else if(record_.func == MODBUS_FUNC_WRITE_MULTI_REGS) {
+        // 寄存器地址, 数据长度
+        return Modbus_App_WriteRegs(record_.regAddr, rxBuf_ + 6);
+    } 
+    else if(record_.func == MODBUS_FUNC_W25Q64_WRITE) {
+        return Modbus_App_W25Q64(record_.regAddr, record_.regCnt);
+    } 
+    else if(record_.func == MODBUS_FUNC_IAP_HANDSHAKE) {
+        Modbus_App_IAP_UART();
+    } 
+    else if(record_.func == MODBUS_FUNC_W25Q64_IAP) {
+        if(!Modbus_App_W25Q64(record_.regAddr, record_.regCnt))
+            return false;
+
+        Modbus_App_IAP_SPI(record_.regAddr, record_.regCnt);
+    }
+
+    return false;
 }
 
 static void frameReply(void)
 {
+    uint8_t replyArr[20] = {0};
+    uint8_t txIdx = 0;
 
+    replyArr[txIdx++] = MODBUS_SLAVE_ADDR;
+    replyArr[txIdx++] = record_.func;
+
+    if(record_.isRead) {
+        uint8_t byteCnt = record_.regCnt * 2;
+        replyArr[txIdx++] = byteCnt;
+
+        if(record_.func == MODBUS_FUNC_READ_COILS) {
+    
+        } 
+        else if(record_.func == MODBUS_FUNC_READ_DISCRETE_INPUT) {
+            
+        } 
+        else if(record_.func == MODBUS_FUNC_READ_HOLD_REGS) {
+    
+        } 
+        else if(record_.func == MODBUS_FUNC_READ_INPUT_REGS) {
+            for(uint8_t i = 0; i < record_.regCnt; i++) {
+                uint16_t res = Modbus_App_ReadInputReg(record_.regAddr + i);
+    
+                replyArr[txIdx++] = res >> 8;
+                replyArr[txIdx++] = (uint8_t)res;
+            }
+        }
+    } else {
+        replyArr[txIdx++] = record_.regAddr >> 8;
+        replyArr[txIdx++] = (uint8_t)record_.regAddr;
+
+        replyArr[txIdx++] = record_.regCnt >> 8;
+        replyArr[txIdx++] = (uint8_t)record_.regCnt;
+    }
+
+    U16Union CRC16;
+    // 计算CRC，低字节在前，高字节在后
+    CRC16.word = CRC16_Modbus(replyArr, txIdx);
+    replyArr[txIdx++] = CRC16.bytes[0];
+    replyArr[txIdx++] = CRC16.bytes[1];
+
+    UART1_Transmit(replyArr, txIdx);
 }
 
 // 主循环调用
@@ -138,19 +210,16 @@ void Modbus_Task(void)
 
     *UART1_GetRxFlag() = false;
 
-    // index_ = 0;
     rxBuf_ = UART1_GetRxBuf(&size_);
-    // UART1_Transmit(rxBuf_, size_);
 
     if (!frameCheck()) return;
         
-    if (!frameExecute()) return;
+    if (!frameExecute()) {
+        errorReply(MODBUS_EXECUTE_ERROR);
+        return;
+    }
 
     frameReply();
-
-    uint8_t data = 0xAA;
-    UART1_Transmit(&data, 1);
-    // printf("0xAA\n");
 
 // #ifdef MODBUS_RS485
 //     RS485_Task(&modbus.rs485);

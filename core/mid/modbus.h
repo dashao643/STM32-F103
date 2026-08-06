@@ -9,12 +9,8 @@
 
 // #define MODBUS_INSTANCE                     USART1
 
-// #define MODBUS_UARTX_TIMEOUT                200
-// #define MODBUS_RX_BUFF_MAXLENTH             256 // 最大帧长度
-
 #define MODBUS_RX_BUFF_MINLENTH             8           // 最小帧长度
 #define MODBUS_SINGLE_WRITE_LENTH           9           // 单写操作帧长
-// #define MODBUS_TX_BUFF_MAXLENTH             50          // 回复帧最大帧长
 
 #define MODBUS_SLAVE_ADDR                   0x01        // 从机地址
 
@@ -49,28 +45,6 @@ typedef struct {
     uint16_t txIndex;
 } Modbus_RecordTypeDef;
 
-// #ifdef MODBUS_UART
-// typedef struct {
-//     My_UART_t uart;
-//     Modbus_State_e state;
-//     Modbus_Record_t record;
-// } Modbus_t;
-// #endif
-
-// #ifdef MODBUS_RS485
-// typedef struct {
-//     RS485_t rs485;
-//     Modbus_State_e state;
-//     Modbus_Record_t record;
-// } Modbus_t;
-// #endif
-
-// void Modbus_Init(void);
 void Modbus_Task(void);
-
-// My_UART_t *Modbus_Get_UART(void);
-// bool Modbus_GetFrameFlag(void);
-
-// void Modbus_Transmit(const uint8_t *data, uint8_t size);
 
 #endif
