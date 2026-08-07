@@ -9,6 +9,7 @@
 #include "ssd1306.h"
 // #include "ssd1306_image.h"
 #include "modbus.h"
+#include "esp8266.h"
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -50,7 +51,7 @@ int main(void)
 		KeyNumTypeDef keyNum = Key_Read();
 		Modbus_Task();
 		RTC_Task();
-		UART2_Task();
+		// UART2_Task();
 
 		if (READ_BIT(keyNum, KEY_1)) {
 			for(uint8_t i = 0; i < 4; i++) {

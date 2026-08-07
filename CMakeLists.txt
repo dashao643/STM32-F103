@@ -38,6 +38,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     core/bsp/w25q64.c
 
     core/mid/modbus.c
+    core/mid/esp8266.c
 
     core/app/modbus_app.c
 )
