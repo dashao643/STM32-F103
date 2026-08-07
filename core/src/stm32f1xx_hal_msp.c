@@ -1,5 +1,6 @@
 #include "stm32f1xx_hal.h"
 #include "uart1.h"
+#include "uart2.h"
 #include "i2c1.h"
 #include "spi.h"
 #include "rtc.h"
@@ -19,6 +20,7 @@ void HAL_MspInit(void)
 void HAL_UART_MspInit(UART_HandleTypeDef *huart)
 {
     UART1_MspInit(huart);
+    UART2_MspInit(huart);
 }
 
 void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)

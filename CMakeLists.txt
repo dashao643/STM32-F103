@@ -29,6 +29,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     core/bsp/led.c
     core/bsp/key.c
     core/bsp/uart1.c
+    core/bsp/uart2.c
     core/bsp/i2c1.c
     core/bsp/i2c_s.c
     core/bsp/ssd1306.c

@@ -3,6 +3,7 @@
 #include "key.h"
 #include "led.h"
 #include "uart1.h"
+#include "uart2.h"
 #include "w25q64.h"
 #include "rtc.h"
 #include "ssd1306.h"
@@ -21,7 +22,7 @@ void Error_Handler(void);
 
 
 // static uint8_t data[] = {0x01, 0x02, 0x03, 0x04, 0x05};
-static uint8_t data[4096];
+// static uint8_t data[4096];
 
 int main(void)
 {
@@ -32,12 +33,13 @@ int main(void)
 	LED_Init();
 	Key_Init();
 	UART1_Init();
+	UART2_Init();
 	W25Q64_Init();
 	SSD1306_Init();
 	RTC_Init();
 	// uint32_t timer = HAL_GetTick();
 
-	printf("f1 project\n");
+	printf("f1 project new\n");
 	// SSD1306_ShowString(1, 1, "test01");
 	// SSD1306_ShowString(1, 1, "wo shi ä½ å¥½");
 	// SSD1306_ShowString(2, 1, "ä½ å¥½å¤§å‹º, ä¸–ç•Œdashao");
@@ -48,27 +50,27 @@ int main(void)
 		KeyNumTypeDef keyNum = Key_Read();
 		Modbus_Task();
 		RTC_Task();
+		UART2_Task();
 
-		// æ“¦é™¤å‰?4ä¸ªæ‰‡åŒ?
 		if (READ_BIT(keyNum, KEY_1)) {
 			for(uint8_t i = 0; i < 4; i++) {
 				W25Q64_EraseSector(i);
 			}
 		} 
 		if (READ_BIT(keyNum, KEY_2)) {
-			uint8_t state = W25Q64_ReadSector(0, data, 4096);
-			printf("state=%d\n", state);
+			// uint8_t state = W25Q64_ReadSector(0, data, 4096);
+			// printf("state=%d\n", state);
 
-			for(uint16_t i = 0; i < 4096; i++) {
-				printf("%02X ", data[i]);
-			}
-			printf("\n");
+			// for(uint16_t i = 0; i < 4096; i++) {
+			// 	printf("%02X ", data[i]);
+			// }
+			// printf("\n");
 		} 
 		if (READ_BIT(keyNum, KEY_3)) {
-			SSD1306_ShowFont(1, 1, "ÊÇhÄãyÂðz´ó*É×2ÓÐ");
-			SSD1306_ShowFont(2, 1, "²ÁËæ·çÄú¸¶¿îÁËÊ²Ã´µÄÂ¬¿¨Ë¹");
-			SSD1306_ShowFont(3, 1, "ÆÆ¸ñ·¢ËÍµ¯Ä»¿ËÀÍ¸£µÂ");
-			SSD1306_ShowFont(4, 1, "Æó¶ìÇëÎÊÈç¹û»áÓ°ÏìÅ©´å");
+			SSD1306_ShowFont(1, 1, "ï¿½ï¿½hï¿½ï¿½yï¿½ï¿½zï¿½ï¿½*ï¿½ï¿½2ï¿½ï¿½");
+			SSD1306_ShowFont(2, 1, "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê²Ã´ï¿½ï¿½Â¬ï¿½ï¿½Ë¹");
+			SSD1306_ShowFont(3, 1, "ï¿½Æ¸ï¿½ï¿½Íµï¿½Ä»ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½");
+			SSD1306_ShowFont(4, 1, "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó°ï¿½ï¿½Å©ï¿½ï¿½");
 		} 
 		if (READ_BIT(keyNum, KEY_4)) {
 			uint8_t state = W25Q64_Check();
@@ -79,7 +81,7 @@ int main(void)
 
 void SystemClock_Config(void)
 {
-	// åˆå§‹åŒ–æ™¶æŒ?
+	// åˆå§‹åŒ–æ™¶ï¿½?
 	RCC_OscInitTypeDef RCC_OscInitStruct = {0};
 
 #if defined RTC_LSE_ON
@@ -116,7 +118,7 @@ void SystemClock_Config(void)
 	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
 		Error_Handler();
 
-	// åˆå§‹åŒ–å¤–è®¾æ—¶é’?
+	// åˆå§‹åŒ–å¤–è®¾æ—¶ï¿½?
 	RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
 	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC | RCC_PERIPHCLK_ADC;
