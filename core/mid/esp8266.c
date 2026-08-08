@@ -21,8 +21,7 @@
 #include "led.h"
 #endif
 
-typedef struct
-{
+typedef struct {
     My_UART_t uart;
     bool isConfig;   // AP或STA模式是否成功配置
     bool doClockSyn; // 是否需要时钟校准

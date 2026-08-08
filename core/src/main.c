@@ -7,6 +7,7 @@
 #include "w25q64.h"
 #include "rtc.h"
 #include "ssd1306.h"
+#include "at24c64.h"
 // #include "ssd1306_image.h"
 #include "modbus.h"
 #include "esp8266.h"
@@ -20,7 +21,6 @@
 
 void SystemClock_Config(void);
 void Error_Handler(void);
-
 
 // static uint8_t data[] = {0x01, 0x02, 0x03, 0x04, 0x05};
 // static uint8_t data[4096];
@@ -68,10 +68,7 @@ int main(void)
 			// printf("\n");
 		} 
 		if (READ_BIT(keyNum, KEY_3)) {
-			SSD1306_ShowFont(1, 1, "��h��y��z��*��2��");
-			SSD1306_ShowFont(2, 1, "�������������ʲô��¬��˹");
-			SSD1306_ShowFont(3, 1, "�Ƹ��͵�Ļ���͸���");
-			SSD1306_ShowFont(4, 1, "������������Ӱ��ũ��");
+
 		} 
 		if (READ_BIT(keyNum, KEY_4)) {
 			uint8_t state = W25Q64_Check();

@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-// #define I2C_HARDWARE
-#define I2C_SOFTWARE
+#define I2C_HARDWARE
+// #define I2C_SOFTWARE
 
 #define GB2312_FONT_LIBRARY
 

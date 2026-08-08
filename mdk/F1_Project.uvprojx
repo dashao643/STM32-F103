@@ -336,7 +336,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F103xB</Define>
               <Undefine></Undefine>
-              <IncludePath>..\drivers\CMSIS\Device\ST\STM32F1xx\Include;..\drivers\CMSIS\Include;..\drivers\STM32F1xx_HAL_Driver\Inc;..\core\inc;..\core\bsp;..\core\app;..\core\mid;..\core\mid\third_party</IncludePath>
+              <IncludePath>..\drivers\CMSIS\Device\ST\STM32F1xx\Include;..\drivers\CMSIS\Include;..\drivers\STM32F1xx_HAL_Driver\Inc;..\core\inc;..\core\bsp;..\core\app;..\core\mid;..\core\mid\third_party;..\assets</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -914,9 +914,23 @@
         </Group>
         <Group>
           <GroupName>core/app</GroupName>
+          <Files>
+            <File>
+              <FileName>modbus_app.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\core\app\modbus_app.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>core/mid</GroupName>
+          <Files>
+            <File>
+              <FileName>modbus.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\core\mid\modbus.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>core/bsp</GroupName>
@@ -940,6 +954,61 @@
               <FileName>uart1.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\core\bsp\uart1.c</FilePath>
+            </File>
+            <File>
+              <FileName>i2c_s.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\core\bsp\i2c_s.c</FilePath>
+            </File>
+            <File>
+              <FileName>i2c1.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\core\bsp\i2c1.c</FilePath>
+            </File>
+            <File>
+              <FileName>key.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\core\bsp\key.c</FilePath>
+            </File>
+            <File>
+              <FileName>rtc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\core\bsp\rtc.c</FilePath>
+            </File>
+            <File>
+              <FileName>spi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\core\bsp\spi.c</FilePath>
+            </File>
+            <File>
+              <FileName>ssd1306.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\core\bsp\ssd1306.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart2.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\core\bsp\uart2.c</FilePath>
+            </File>
+            <File>
+              <FileName>w25q64.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\core\bsp\w25q64.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>assets</GroupName>
+          <Files>
+            <File>
+              <FileName>ssd1306_font.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\assets\ssd1306_font.h</FilePath>
+            </File>
+            <File>
+              <FileName>ssd1306_image.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\assets\ssd1306_image.h</FilePath>
             </File>
           </Files>
         </Group>

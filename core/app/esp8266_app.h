@@ -7,28 +7,24 @@
 // 三种指令：控制指令、写指令、读指令
 
 // 命令指令，字符串对应功能函数
-typedef struct
-{
+typedef struct {
     const char *cmdStr;
     void (*pFunc)(void);
 } CmdTable_t;
 
 // 读数据指令
-typedef struct
-{
+typedef struct {
     const char *readStr;
     void (*pFunc)(char *resStr);
 } ReadTable_t;
 
 // 写数据指令
-typedef struct
-{
+typedef struct {
     const char *writeStr;
     bool (*pFunc)(const char *);
 } WriteTable_t;
 
-typedef enum
-{
+typedef enum {
     WRITE_OK = 0,
     WRITE_ERROR,
     WiFi_CONFIG_OK,

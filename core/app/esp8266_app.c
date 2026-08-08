@@ -2,7 +2,6 @@
 #include "stm32f1xx_hal_def.h"
 #include "esp8266_app.h"
 #include "at24c64_app.h"
-// #include "modbus.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -32,10 +31,12 @@ static void Fun_LedAllToggle(void)
     LED_BLUE_TOGGLE();
 }
 
-CmdTable_t cmdTable[] = { { "CMD_LED_RED_TOGGLE", Fun_LedRedToggle },
-                          { "CMD_LED_GREEN_TOGGLE", Fun_LedGreenToggle },
-                          { "CMD_LED_BLUE_TOGGLE", Fun_LedBlueToggle },
-                          { "CMD_LED_ALL_TOGGLE", Fun_LedAllToggle } };
+CmdTable_t cmdTable[] = { 
+    { "CMD_LED_RED_TOGGLE", Fun_LedRedToggle },            
+    { "CMD_LED_GREEN_TOGGLE", Fun_LedGreenToggle },   
+    { "CMD_LED_BLUE_TOGGLE", Fun_LedBlueToggle },
+    { "CMD_LED_ALL_TOGGLE", Fun_LedAllToggle } 
+};
 #define CMD_CNT (sizeof(cmdTable) / sizeof(CmdTable_t))
 
 /********************* 读指令 *******************/
@@ -58,7 +59,10 @@ static void Fun_ReadDS18B20(char *resStr)
     sprintf(resStr, "{\"ds18b20_temp\": %d.%d}", tempInt, tempDec);
 }
 
-ReadTable_t readTable[] = { { "READ_DHT11", Fun_ReadDHT11 }, { "READ_DS18B20", Fun_ReadDS18B20 } };
+ReadTable_t readTable[] = { 
+    { "READ_DHT11", Fun_ReadDHT11 }, 
+    { "READ_DS18B20", Fun_ReadDS18B20 } 
+};
 #define READ_CNT (sizeof(readTable) / sizeof(ReadTable_t))
 
 /********************* 写指令 *******************/
@@ -82,7 +86,9 @@ static bool Fun_WiFiConfig(const char *str)
     return true;
 }
 
-WriteTable_t writeTable[] = { { "WRITE_WiFi_CONFIG:", Fun_WiFiConfig } };
+WriteTable_t writeTable[] = { 
+    { "WRITE_WiFi_CONFIG:", Fun_WiFiConfig } 
+};
 #define WRITE_CNT (sizeof(writeTable) / sizeof(WriteTable_t))
 
 /*-----------------------------------------------------------------*/
