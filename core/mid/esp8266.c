@@ -1,5 +1,6 @@
 #include "stm32f1xx_hal.h"
 #include "esp8266.h"
+#include "uart2.h"
 #include "esp8266_app.h"
 #include "at24c64_app.h"
 #include "at24c64.h"
@@ -28,16 +29,15 @@ typedef struct {
     uint32_t clockTimer;
 } ESP8266_t;
 
-static uint8_t txBuf[ESP8266_TX_MAXLENTH];
-static uint8_t rxBuf[ESP8266_RX_MAXLENTH];
-static ESP8266_t esp8266 = { 0 };
+// static uint8_t txBuf[ESP8266_TX_MAXLENTH];
+// static uint8_t rxBuf[ESP8266_RX_MAXLENTH];
+// static ESP8266_t esp8266 = { 0 };
 
 /************************ 云端服务器 *************************/
-// const char SERVER_IP[] = {"\"192.168.31.155\""};
-const char SERVER_IP[] = { "\"39.96.50.211\"" };
-const char SERVER_PORT[] = { "60001" };
-// const char SERVER_IP[] = {"\"192.168.31.155\""};
-// const char SERVER_PORT[] = {"6789"};
+const char SERVER_IP[] = {"\"192.168.31.155\""};
+// const char SERVER_IP[] = { "\"39.96.50.211\"" };
+// const char SERVER_PORT[] = { "60001" };
+const char SERVER_PORT[] = {"6789"};
 
 /********************** 接收数据固定帧头 **********************/
 // 0D   0A  2B 49 50 44 2C  30  2C   33     3A
@@ -80,8 +80,8 @@ static bool connectWiFi(void)
 {
     // 从EE读出用户名和密码
     uint8_t ssidByte = 0, pwdByte = 0;
-    AT24C64_Read_Page(WIFI_SSID_PAGE, &ssidByte, 1);
-    AT24C64_Read_Page(WIFI_PASSWORD_PAGE, &pwdByte, 1);
+    AT24C64_ReadPage(WIFI_SSID_PAGE, &ssidByte, 1);
+    AT24C64_ReadPage(WIFI_PASSWORD_PAGE, &pwdByte, 1);
     if (ssidByte == AT24C64_BLANK_BYTE || pwdByte == AT24C64_BLANK_BYTE) {
         printf("WiFi not configured\n");
         return false;

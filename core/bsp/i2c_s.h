@@ -3,7 +3,7 @@
 
 #include "stm32f1xx_hal_def.h"
 
-#include <stdio.h>
+#include <stdint.h>
 
 void I2C_Init(void);
 

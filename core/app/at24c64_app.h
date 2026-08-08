@@ -1,6 +1,7 @@
 #ifndef __AT24C64_ADDR_H__
 #define __AT24C64_ADDR_H__
 
+#include "stm32f1xx_hal_def.h"
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -26,7 +27,7 @@
 #define WIFI_PASSWORD_PAGE           253   // pwd最大长度为32字节
 #define WIFI_PASSWORD_SIZE           32
 
-void AT24C64_App_Init(void);
+void AT24C64_App_Add(void);
 
 void AT24C64_App_ReadUserId(void);
 void AT24C64_App_ReadUserPassword(void);

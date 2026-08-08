@@ -11,6 +11,7 @@
 // #include "ssd1306_image.h"
 #include "modbus.h"
 #include "esp8266.h"
+#include "at24c64_app.h"
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -36,8 +37,10 @@ int main(void)
 	UART1_Init();
 	UART2_Init();
 	W25Q64_Init();
+	AT24C64_Init();
 	SSD1306_Init();
 	RTC_Init();
+	AT24C64_App_Add();
 	// uint32_t timer = HAL_GetTick();
 
 	printf("f1 project new\n");
@@ -57,15 +60,10 @@ int main(void)
 			for(uint8_t i = 0; i < 4; i++) {
 				W25Q64_EraseSector(i);
 			}
-		} 
+		}
 		if (READ_BIT(keyNum, KEY_2)) {
-			// uint8_t state = W25Q64_ReadSector(0, data, 4096);
-			// printf("state=%d\n", state);
-
-			// for(uint16_t i = 0; i < 4096; i++) {
-			// 	printf("%02X ", data[i]);
-			// }
-			// printf("\n");
+			uint8_t state = AT24C64_Check();
+			printf("state=%d\n", state);
 		} 
 		if (READ_BIT(keyNum, KEY_3)) {
 

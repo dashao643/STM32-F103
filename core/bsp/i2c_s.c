@@ -7,10 +7,10 @@
 #define I2C_TIMEOUT_US    50
 
 #define I2C_SCL_GPIO_Port       GPIOB
-#define I2C_SCL_Pin             GPIO_PIN_8
+#define I2C_SCL_Pin             GPIO_PIN_6
 
 #define I2C_SDA_GPIO_Port       GPIOB
-#define I2C_SDA_Pin             GPIO_PIN_9
+#define I2C_SDA_Pin             GPIO_PIN_7
 
 #define SCL_HIGH()  HAL_GPIO_WritePin(I2C_SCL_GPIO_Port, I2C_SCL_Pin, GPIO_PIN_SET)
 #define SCL_LOW()   HAL_GPIO_WritePin(I2C_SCL_GPIO_Port, I2C_SCL_Pin, GPIO_PIN_RESET)
@@ -149,6 +149,8 @@ static uint8_t receiveByte(void)
 
 void I2C_Init(void)
 {
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+
     GPIO_InitTypeDef gpio;
 
     gpio.Mode = GPIO_MODE_OUTPUT_PP;
@@ -163,7 +165,7 @@ void I2C_Init(void)
     gpio.Pull = GPIO_PULLUP;
     gpio.Speed = GPIO_SPEED_FREQ_MEDIUM;
 
-    HAL_GPIO_Init(I2C_SCL_GPIO_Port, &gpio);
+    HAL_GPIO_Init(I2C_SDA_GPIO_Port, &gpio);
 }
 
 /**

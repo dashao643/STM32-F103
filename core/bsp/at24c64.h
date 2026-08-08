@@ -1,7 +1,11 @@
 #ifndef __AT24C64_H__
 #define __AT24C64_H__
 
+#include "stm32f1xx_hal_def.h"
+
 #include <stdint.h>
+
+// 写入完成后, 后续写入手动调用 WaitWriteInterval 等待写入完成
 
 #define AT24C64_WRITE_INTERVAL_MS     5         // 执行写入操作后的间隔时间 
 
@@ -12,14 +16,17 @@
 #define AT24C64_MAX_READ_SIZE         128       // 最大数据长度(4页大小)
 #define AT24C64_BLANK_BYTE            0xFF      // 空白字节
 
-HAL_StatusTypeDef AT24C64_Write_Byte(uint16_t page, uint8_t addrInPage, uint8_t data);
-HAL_StatusTypeDef AT24C64_Write_Bytes(uint16_t page, uint8_t addrInPage, const uint8_t *data, uint8_t size);
-HAL_StatusTypeDef AT24C64_Write_Page(uint16_t page, const uint8_t *data, uint8_t size);
+void AT24C64_Init(void);
+HAL_StatusTypeDef AT24C64_Check(void);
 
-HAL_StatusTypeDef AT24C64_Read_Byte(uint16_t page, uint8_t addrInPage, uint8_t *data, uint8_t size);
-HAL_StatusTypeDef AT24C64_Read_Page(uint16_t page, uint8_t *data, uint8_t size);
+HAL_StatusTypeDef AT24C64_WriteByte(uint16_t page, uint8_t addrInPage, uint8_t data);
+HAL_StatusTypeDef AT24C64_WriteBytes(uint16_t page, uint8_t addrInPage, const uint8_t *data, uint8_t size);
+HAL_StatusTypeDef AT24C64_WritePage(uint16_t page, const uint8_t *data, uint8_t size);
 
-HAL_StatusTypeDef AT24C64_Erase_Page(uint16_t page);
+HAL_StatusTypeDef AT24C64_ReadByte(uint16_t page, uint8_t addrInPage, uint8_t *data, uint8_t size);
+HAL_StatusTypeDef AT24C64_ReadPage(uint16_t page, uint8_t *data, uint8_t size);
+
+HAL_StatusTypeDef AT24C64_ErasePage(uint16_t page);
 
 void AT24C64_WaitWriteInterval(void);
 
