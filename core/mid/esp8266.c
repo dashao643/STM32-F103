@@ -12,7 +12,7 @@
 #include <stdlib.h>
 
 #define LED_DEBUG
-// #define MODBUS_DEBUG
+#define UART1_DEBUG
 
 #ifdef UART1_DEBUG
 #include "uart1.h"
@@ -22,16 +22,13 @@
 #include "led.h"
 #endif
 
-typedef struct {
-    My_UART_t uart;
-    bool isConfig;   // AP或STA模式是否成功配置
-    bool doClockSyn; // 是否需要时钟校准
-    uint32_t clockTimer;
-} ESP8266_t;
+// 与 esp8266 通信用 uart2, uart1 用于打印调试
 
-// static uint8_t txBuf[ESP8266_TX_MAXLENTH];
-// static uint8_t rxBuf[ESP8266_RX_MAXLENTH];
-// static ESP8266_t esp8266 = { 0 };
+static bool isConfig_ = false;       // AP或STA模式是否成功配置
+static bool doClockSyn_ = false;     // 是否需要时钟校准
+static uint32_t clockTimer_ = 0;     // 等待时钟访问
+
+static uint8_t *rxBuf_;              // 全局数组缓冲区
 
 /************************ 云端服务器 *************************/
 const char SERVER_IP[] = {"\"192.168.31.155\""};
@@ -46,7 +43,7 @@ const char SERVER_PORT[] = {"6789"};
 const uint8_t FRAME_HEAD[] = { 0x0D, 0x0A, 0x2B, 0x49, 0x50, 0x44, 0x2C };
 #define FRAME_HEAD_LEN (sizeof(FRAME_HEAD)) // 长度 = 7
 
-static bool transmitReceive(const char *tx, const char *rx, uint16_t timeout);
+static HAL_StatusTypeDef transmitReceive(const char *tx, const char *rx, uint16_t timeout);
 static bool connectWiFi(void);
 static void clockSync(void);
 static bool clockFrameParse(void);
@@ -58,22 +55,24 @@ static bool AT_STA_Config(void);
 static bool AT_AP_Config(void);
 static bool connectToServer(void);
 
-static bool transmitReceive(const char *tx, const char *rx, uint16_t timeout)
+static HAL_StatusTypeDef transmitReceive(const char *tx, const char *rx, uint16_t timeout)
 {
     uint8_t retryCnt = 0;
 
     while (retryCnt++ < ESP8266_RETRY_COUNT) {
         ESP8266_AT_Transmit(tx);
         uint8_t state = ESP8266_AT_Receive(rx, timeout);
-        if (state == HAL_OK)
-            return true;
-        else if (state == HAL_BUSY) {
+
+        if(state == HAL_OK)
+            return HAL_OK;
+        else if(state == HAL_BUSY) {
             if (ESP8266_AT_Receive(rx, 3000) == HAL_OK)
-                return true;
-        } else if (state == HAL_ERROR)
-            return false;
+                return HAL_OK;
+        }
+        else if(state == HAL_ERROR) 
+            return HAL_ERROR;
     }
-    return false;
+    return HAL_TIMEOUT;
 }
 
 static bool connectWiFi(void)
@@ -99,7 +98,7 @@ static bool connectWiFi(void)
     char connectWiFi[100] = { 0 };
     sprintf(connectWiFi, "AT+CWJAP=%s,%s\r\n", ssid, pwd);
 
-    if (!transmitReceive(connectWiFi, "WIFI CONNECTED", 5000)) {
+    if (transmitReceive(connectWiFi, "WIFI CONNECTED", 5000) != HAL_OK) {
         printf("WiFi connected fail\n");
         return false;
     }
@@ -110,8 +109,8 @@ static void clockSync(void)
 {
     transmitReceive("AT+CIPSNTPCFG=1,8\r\n", "OK", 500);
 
-    esp8266.doClockSyn = true;
-    esp8266.clockTimer = HAL_GetTick();
+    doClockSyn_ = true;
+    clockTimer_ = HAL_GetTick();
 }
 
 /*
@@ -126,7 +125,9 @@ static bool clockFrameParse(void)
     char monthStr[4] = { 0 };
     int day, hour, minute, second, year;
 
-    uint8_t ret = sscanf((char *)esp8266.uart.rxBuf, "%*[^:]:%*s %3s %d %d:%d:%d %d", monthStr, &day, &hour, &minute, &second, &year);
+    uint8_t ret = sscanf((char *)rxBuf_, "%*[^:]:%*s %3s %d %d:%d:%d %d", 
+        monthStr, &day, &hour, &minute, &second, &year);
+
     if (ret != 6)
         return false;
 
@@ -145,9 +146,9 @@ static bool clockFrameParse(void)
     time.Minutes = minute;
     time.Seconds = second;
 
-    RTC_TimeDateAdjust(&time, &date);
+    RTC_SetDateTime(&date, &time);
 
-    UART_Clear_AT(&esp8266.uart);
+    UART2_GetRxClear();
 
     return true;
 }
@@ -162,7 +163,7 @@ static void frameReply(uint8_t id, const char *data)
     sprintf(txBuf, "AT+CIPSEND=%u,%u\r\n", id, len);
 
     ESP8266_AT_Transmit(txBuf);
-    HAL_Delay(1);
+    HAL_Delay(5);
 
     ESP8266_AT_Transmit(data);
 }
@@ -170,32 +171,34 @@ static void frameReply(uint8_t id, const char *data)
 static bool frameHeaderCheck(void)
 {
     // 最短帧长
-    if (esp8266.uart.rxIdx < ESP8266_RX_MINLENTH) {
+    if (UART2_GetRxStruct()->size < ESP8266_RX_MINLENTH)
         return false;
-    }
+
     // 补充结尾符
-    esp8266.uart.rxBuf[esp8266.uart.rxIdx] = 0;
+    if(UART2_GetRxStruct()->size < UART2_RX_BUFF_MAX_SIZE)
+        rxBuf_[UART2_GetRxStruct()->size] = 0;
+
     // 校验帧头
-    if (memcmp(FRAME_HEAD, esp8266.uart.rxBuf, FRAME_HEAD_LEN) != 0) {
+    if (memcmp(FRAME_HEAD, rxBuf_, FRAME_HEAD_LEN) != 0)
         return false;
-    }
+
     return true;
 }
 
 static void frameExecute(void)
 {
     // 提取客户端id用于回复
-    uint32_t id = esp8266.uart.rxBuf[7] - '0';
+    uint8_t id = rxBuf_[7] - '0';
 
     // 找冒号,冒号后是数据
-    char *colon = strchr((char *)esp8266.uart.rxBuf, ':');
+    char *colon = strchr((char *)rxBuf_, ':');
     if (colon == NULL) {
         frameReply(id, "frame error");
         return;
     };
     char *data = colon + 1;
     // 总长度减去固定帧头长度
-    uint16_t size = esp8266.uart.rxIdx - 11;
+    uint16_t size = UART2_GetRxStruct()->size - 11;
 
     // 校验指令头是否是 CMD
     if (strncmp(data, "CMD", 3) == 0) {
@@ -242,31 +245,31 @@ static void frameProcess(void)
 static bool AT_STA_Config(void)
 {
     // 测试AT
-    if (!transmitReceive("AT\r\n", "OK", 20))
+    if (transmitReceive("AT\r\n", "OK", 20) != HAL_OK)
         return false;
 
     // 设置为STA模式
-    if (!transmitReceive("AT+CWMODE=1\r\n", "OK", 100))
+    if (transmitReceive("AT+CWMODE=1\r\n", "OK", 100) != HAL_OK)
         return false;
 
     // 开启多连接
-    if (!transmitReceive("AT+CIPMUX=1\r\n", NULL, 100))
+    if (transmitReceive("AT+CIPMUX=1\r\n", NULL, 100) != HAL_OK)
         return false;
     // HAL_Delay(500);
 
     // 查询网络连接状态,
-    if (!transmitReceive("AT+CIPSTATUS\r\n", "OK", 100))
+    if (transmitReceive("AT+CIPSTATUS\r\n", "OK", 100) != HAL_OK)
         return false;
 
     // 若为未连接，连接WiFi
-    if (!strstr((char *)esp8266.uart.rxBuf, "STATUS:2")) {
+    if (!strstr((char *)rxBuf_, "STATUS:2")) {
         if (!connectWiFi())
             return false;
     }
 
     // 查询本机IP地址并打印
     transmitReceive("AT+CIPSTA?\r\n", "ip", 5000);
-    printf("%s\n", esp8266.uart.rxBuf);
+    printf("%s\n", rxBuf_);
 
     // 联网时钟校准
     clockSync();
@@ -281,16 +284,16 @@ static bool AT_STA_Config(void)
 static bool AT_AP_Config(void)
 {
     // 设置为AP模式
-    if (!transmitReceive("AT+CWMODE=2\r\n", "OK", 50))
+    if (transmitReceive("AT+CWMODE=2\r\n", "OK", 50) != HAL_OK)
         return false;
     // 配置WiFi
-    if (!transmitReceive("AT+CWSAP=\"dashao\",\"12345678\",6,4\r\n", "OK", 50))
+    if (transmitReceive("AT+CWSAP=\"dashao\",\"12345678\",6,4\r\n", "OK", 50) != HAL_OK)
         return false;
     // 设置多连接
-    if (!transmitReceive("AT+CIPMUX=1\r\n", "OK", 50))
+    if (transmitReceive("AT+CIPMUX=1\r\n", "OK", 50) != HAL_OK)
         return false;
     // 开启服务 IP：192.168.4.1 Port:80
-    if (!transmitReceive("AT+CIPSERVER=1,80\r\n", "OK", 50))
+    if (transmitReceive("AT+CIPSERVER=1,80\r\n", "OK", 50) != HAL_OK)
         return false;
 
     return true;
@@ -300,7 +303,7 @@ static bool connectToServer(void)
 {
     // 查询是否连接WiFi
     transmitReceive("AT+CIPSTATUS\r\n", NULL, 1000);
-    if (strstr((char *)esp8266.uart.rxBuf, "STATUS:5"))
+    if (strstr((char *)rxBuf_, "STATUS:5"))
         return false;
 
     // 与云端服务器建立TCP连接
@@ -309,7 +312,7 @@ static bool connectToServer(void)
     transmitReceive(tcpConnect, "OK", 5000);
 
     // 查询是否连接云端
-    if (!transmitReceive("AT+CIPSTATUS\r\n", "STATUS:3", 1000)) {
+    if (transmitReceive("AT+CIPSTATUS\r\n", "STATUS:3", 1000) != HAL_OK) {
         printf("server connect fail\n");
         return false;
     }
@@ -333,9 +336,9 @@ HAL_StatusTypeDef ESP8266_AT_Transmit(const char *cmd)
     uint16_t len = strlen(cmd);
 
     // 发新指令前重置缓冲区
-    UART_Clear_AT(&esp8266.uart);
+    UART2_GetRxClear();
 
-    return HAL_UART_Transmit(ESP8266_HANDLE, (uint8_t *)cmd, len, ESP8266_TX_TIMEOUT_MS);
+    return UART2_Transmit((uint8_t *)cmd, len);
 }
 
 /**
@@ -350,24 +353,25 @@ HAL_StatusTypeDef ESP8266_AT_Receive(const char *res, uint16_t timeout)
     uint16_t cnt = 0;
 
     while (cnt < timeout) {
-        if (esp8266.uart.frameEnd) {
-            esp8266.uart.frameEnd = false;
+        if (UART2_GetRxStruct()->rxFlag) {
+            UART2_GetRxStruct()->rxFlag = 0;
 
             // 缓冲区索引处补充\0结束符
-            esp8266.uart.rxBuf[esp8266.uart.rxIdx] = 0;
-#ifdef MODBUS_DEBUG
-            Modbus_Transmit(esp8266.uart.rxBuf, esp8266.uart.rxIdx);
+            if(UART2_GetRxStruct()->size < UART2_RX_BUFF_MAX_SIZE)
+                rxBuf_[UART2_GetRxStruct()->size] = 0;
+#ifdef UART1_DEBUG
+            UART1_Transmit(rxBuf_, UART2_GetRxStruct()->size);
 #endif
             if (!res)
                 return HAL_OK;
 
-            if (strstr((char *)esp8266.uart.rxBuf, "busy"))
+            if (strstr((char *)rxBuf_, "busy"))
                 return HAL_BUSY;
 
-            if (strstr((char *)esp8266.uart.rxBuf, "ERROR"))
+            if (strstr((char *)rxBuf_, "ERROR"))
                 return HAL_ERROR;
 
-            if (strstr((char *)esp8266.uart.rxBuf, res))
+            if (strstr((char *)rxBuf_, res))
                 return HAL_OK;
         }
         HAL_Delay(1);
@@ -379,65 +383,47 @@ HAL_StatusTypeDef ESP8266_AT_Receive(const char *res, uint16_t timeout)
 bool ESP8266_ConnectToServer(void)
 {
     bool res = connectToServer();
-    UART_Clear_AT(&esp8266.uart);
+    UART2_GetRxClear();
 
     return res;
 }
 
 void ESP8266_Init(void)
 {
-    /******************* UART *******************/
-    esp8266.uart.instance = ESP8266_INSTANCE;
-    esp8266.uart.handle = ESP8266_HANDLE;
-    esp8266.uart.rxBuf = rxBuf;
-    esp8266.uart.rxMaxSize = ESP8266_RX_MAXLENTH;
-    esp8266.uart.txBuf = txBuf;
-    esp8266.uart.txMaxSize = ESP8266_TX_MAXLENTH;
-    UART_Clear_AT(&esp8266.uart);
-    __HAL_UART_ENABLE_IT(ESP8266_HANDLE, UART_IT_IDLE);
-
-    /******************* ESP8266 *******************/
-    esp8266.isConfig = false;
-    esp8266.doClockSyn = false;
+    rxBuf_ = UART2_GetRxStruct()->rxBuf;
 
     // 默认STA模式
     if (AT_STA_Config()) {
         printf("STA model\n");
-        esp8266.isConfig = true;
+        isConfig_ = true;
     }
     // 失败则配置AP模式用于局域网通信和配网
     else if (AT_AP_Config()) {
         printf("AP model\n");
-        esp8266.isConfig = true;
-    } else {
+        isConfig_ = true;
+    } 
+    else
         printf("STA/AP Config fail\n");
-    }
 
-    UART_Clear_AT(&esp8266.uart);
+    UART2_GetRxClear();
 }
 
 void ESP8266_Task(void)
 {
-    if (!esp8266.isConfig)
-        return;
+    if (!isConfig_) return;
 
-    if (esp8266.doClockSyn) {
-        if ((HAL_GetTick() - esp8266.clockTimer) > ESP8266_CLOCK_SYN_MS) {
+    if (doClockSyn_) {
+        if ((HAL_GetTick() - clockTimer_) > ESP8266_CLOCK_SYN_MS) {
             clockFrameParse();
-            esp8266.doClockSyn = false;
+            doClockSyn_ = false;
         }
     }
 
-    if (esp8266.uart.frameEnd) {
-#ifdef MODBUS_DEBUG
-        Modbus_Transmit(esp8266.uart.rxBuf, esp8266.uart.rxIdx);
+    if (UART2_GetRxStruct()->rxFlag) {
+#ifdef UART1_DEBUG
+        UART1_Transmit(rxBuf_, UART2_GetRxStruct()->size);
 #endif
         frameProcess();
-        UART_Clear_AT(&esp8266.uart);
+        UART2_GetRxClear();
     }
-}
-
-My_UART_t *ESP8266_Get_UART(void)
-{
-    return &esp8266.uart;
 }

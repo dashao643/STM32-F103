@@ -8,8 +8,17 @@
 #include <string.h>
 
 #include "led.h"
+
+// #define DHT11
+// #define DS18B20
+
+#ifdef DHT11
 #include "dht11.h"
+#endif
+
+#ifdef DS18B20
 #include "ds18b20.h"
+#endif
 
 /********************* 命令指令 *******************/
 static void Fun_LedRedToggle(void)
@@ -42,19 +51,23 @@ CmdTable_t cmdTable[] = {
 /********************* 读指令 *******************/
 static void Fun_ReadDHT11(char *resStr)
 {
-    uint8_t temp = DHT11_GetTemperature();
-    uint8_t humi = DHT11_GetHumidity();
-
+    uint8_t temp = 0;
+    uint8_t humi = 0; 
+#ifdef DHT11
+    temp = DHT11_GetTemperature();
+    humi = DHT11_GetHumidity();
+#endif
     // 返回json格式
     sprintf(resStr, "{\"dht11_temp\": %d, \"dht11_humi\": %d}", temp, humi);
 }
 
 static void Fun_ReadDS18B20(char *resStr)
 {
-    int8_t tempInt;
-    uint8_t tempDec;
+    int8_t tempInt = 0;
+    uint8_t tempDec = 0;
+#ifdef DS18B20
     DS18B20_GetTemp(&tempInt, &tempDec);
-
+#endif
     // 返回json格式
     sprintf(resStr, "{\"ds18b20_temp\": %d.%d}", tempInt, tempDec);
 }
@@ -127,7 +140,7 @@ bool ESP8266_APP_Read(const char *readStr, uint16_t size, char *resStr, uint8_t 
     return false;
 }
 
-ESP8266_APP_Write_e ESP8266_APP_Write(const char *writeStr, uint16_t size)
+ESP8266_APP_WriteState ESP8266_APP_Write(const char *writeStr, uint16_t size)
 {
     for (uint8_t i = 0; i < WRITE_CNT; i++) {
         if (strstr(writeStr, writeTable[i].writeStr)) {

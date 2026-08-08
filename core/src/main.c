@@ -42,8 +42,10 @@ int main(void)
 	RTC_Init();
 	AT24C64_App_Add();
 	// uint32_t timer = HAL_GetTick();
-
+	
 	printf("f1 project new\n");
+
+	ESP8266_Init();
 	// SSD1306_ShowString(1, 1, "test01");
 	// SSD1306_ShowString(1, 1, "wo shi 你好");
 	// SSD1306_ShowString(2, 1, "你好大勺, 世界dashao");
@@ -54,7 +56,7 @@ int main(void)
 		KeyNumTypeDef keyNum = Key_Read();
 		Modbus_Task();
 		RTC_Task();
-		// UART2_Task();
+		ESP8266_Task();
 
 		if (READ_BIT(keyNum, KEY_1)) {
 			for(uint8_t i = 0; i < 4; i++) {

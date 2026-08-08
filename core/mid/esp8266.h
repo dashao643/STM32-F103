@@ -15,7 +15,7 @@
 // #define ESP8266_TX_TIMEOUT_MS            50
 // #define ESP8266_TX_MAXLENTH              256
 // #define ESP8266_RX_MAXLENTH              256
-// #define ESP8266_RX_MINLENTH              12       // 最小帧长度
+#define ESP8266_RX_MINLENTH              12       // 最小帧长度
 
 #define ESP8266_RETRY_COUNT              3        // 重试次数   
 
@@ -28,6 +28,5 @@ bool ESP8266_ConnectToServer(void);
 
 void ESP8266_Init(void);
 void ESP8266_Task(void);
-// My_UART_t* ESP8266_Get_UART(void);
 
 #endif

@@ -43,6 +43,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 
     core/app/modbus_app.c
     core/app/at24c64_app.c
+    core/app/esp8266_app.c
 )
 
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
