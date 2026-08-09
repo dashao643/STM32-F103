@@ -21,12 +21,11 @@
 
 #define ESP8266_CLOCK_SYN_MS             5000     // 等待8266时钟校准
 
-HAL_StatusTypeDef ESP8266_AT_Transmit(const char *cmd);
-HAL_StatusTypeDef ESP8266_AT_Receive(const char *res, uint16_t timeout);
-
-bool ESP8266_ConnectToServer(void);
+// HAL_StatusTypeDef ESP8266_AT_Transmit(const char *cmd);
+// HAL_StatusTypeDef ESP8266_AT_Receive(const char *res, uint16_t timeout);
 
 void ESP8266_Init(void);
 void ESP8266_Task(void);
+bool ESP8266_ConnectToServer(void);
 
 #endif

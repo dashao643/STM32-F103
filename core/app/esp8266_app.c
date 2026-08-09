@@ -20,6 +20,26 @@
 #include "ds18b20.h"
 #endif
 
+// 三种指令：控制指令、写指令、读指令
+
+// 命令指令，字符串对应功能函数
+typedef struct {
+    const char *cmdStr;
+    void (*pFunc)(void);
+} CmdTable;
+
+// 读数据指令
+typedef struct {
+    const char *readStr;
+    void (*pFunc)(char *resStr);
+} ReadTable;
+
+// 写数据指令
+typedef struct {
+    const char *writeStr;
+    bool (*pFunc)(const char *);
+} WriteTable;
+
 /********************* 命令指令 *******************/
 static void Fun_LedRedToggle(void)
 {
@@ -40,13 +60,13 @@ static void Fun_LedAllToggle(void)
     LED_BLUE_TOGGLE();
 }
 
-CmdTable_t cmdTable[] = { 
+CmdTable cmdTable[] = { 
     { "CMD_LED_RED_TOGGLE", Fun_LedRedToggle },            
     { "CMD_LED_GREEN_TOGGLE", Fun_LedGreenToggle },   
     { "CMD_LED_BLUE_TOGGLE", Fun_LedBlueToggle },
     { "CMD_LED_ALL_TOGGLE", Fun_LedAllToggle } 
 };
-#define CMD_CNT (sizeof(cmdTable) / sizeof(CmdTable_t))
+#define CMD_CNT (sizeof(cmdTable) / sizeof(CmdTable))
 
 /********************* 读指令 *******************/
 static void Fun_ReadDHT11(char *resStr)
@@ -72,11 +92,11 @@ static void Fun_ReadDS18B20(char *resStr)
     sprintf(resStr, "{\"ds18b20_temp\": %d.%d}", tempInt, tempDec);
 }
 
-ReadTable_t readTable[] = { 
+ReadTable readTable[] = { 
     { "READ_DHT11", Fun_ReadDHT11 }, 
     { "READ_DS18B20", Fun_ReadDS18B20 } 
 };
-#define READ_CNT (sizeof(readTable) / sizeof(ReadTable_t))
+#define READ_CNT (sizeof(readTable) / sizeof(ReadTable))
 
 /********************* 写指令 *******************/
 static bool Fun_WiFiConfig(const char *str)
@@ -99,10 +119,10 @@ static bool Fun_WiFiConfig(const char *str)
     return true;
 }
 
-WriteTable_t writeTable[] = { 
+WriteTable writeTable[] = { 
     { "WRITE_WiFi_CONFIG:", Fun_WiFiConfig } 
 };
-#define WRITE_CNT (sizeof(writeTable) / sizeof(WriteTable_t))
+#define WRITE_CNT (sizeof(writeTable) / sizeof(WriteTable))
 
 /*-----------------------------------------------------------------*/
 
@@ -140,7 +160,7 @@ bool ESP8266_APP_Read(const char *readStr, uint16_t size, char *resStr, uint8_t 
     return false;
 }
 
-ESP8266_APP_WriteState ESP8266_APP_Write(const char *writeStr, uint16_t size)
+ESP8266_APP_WriteStatus ESP8266_APP_Write(const char *writeStr, uint16_t size)
 {
     for (uint8_t i = 0; i < WRITE_CNT; i++) {
         if (strstr(writeStr, writeTable[i].writeStr)) {

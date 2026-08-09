@@ -22,6 +22,7 @@
 #include "led.h"
 #endif
 
+// esp01s 不支持 AT+CIPSNTPTIME? 
 // 与 esp8266 通信用 uart2, uart1 用于打印调试
 
 static bool isConfig_ = false;       // AP或STA模式是否成功配置
@@ -331,8 +332,6 @@ static bool connectToServer(void)
  */
 HAL_StatusTypeDef ESP8266_AT_Transmit(const char *cmd)
 {
-    // printf("%s\n",cmd);
-
     uint16_t len = strlen(cmd);
 
     // 发新指令前重置缓冲区
@@ -392,6 +391,7 @@ void ESP8266_Init(void)
 {
     rxBuf_ = UART2_GetRxStruct()->rxBuf;
 
+    HAL_Delay(200);
     // 默认STA模式
     if (AT_STA_Config()) {
         printf("STA model\n");

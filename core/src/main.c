@@ -36,16 +36,17 @@ int main(void)
 	Key_Init();
 	UART1_Init();
 	UART2_Init();
+	RTC_Init();
 	W25Q64_Init();
 	AT24C64_Init();
 	SSD1306_Init();
-	RTC_Init();
+
 	AT24C64_App_Add();
+	// ESP8266_Init();
 	// uint32_t timer = HAL_GetTick();
 	
 	printf("f1 project new\n");
 
-	ESP8266_Init();
 	// SSD1306_ShowString(1, 1, "test01");
 	// SSD1306_ShowString(1, 1, "wo shi 你好");
 	// SSD1306_ShowString(2, 1, "你好大勺, 世界dashao");
@@ -56,7 +57,7 @@ int main(void)
 		KeyNumTypeDef keyNum = Key_Read();
 		Modbus_Task();
 		RTC_Task();
-		ESP8266_Task();
+		// ESP8266_Task();
 
 		if (READ_BIT(keyNum, KEY_1)) {
 			for(uint8_t i = 0; i < 4; i++) {
@@ -68,7 +69,10 @@ int main(void)
 			printf("state=%d\n", state);
 		} 
 		if (READ_BIT(keyNum, KEY_3)) {
+			ESP8266_AT_Transmit("AT\r\n");
 
+			uint8_t state = ESP8266_AT_Receive("AT\r\n", 2000);
+			printf("state=%d\n", state);
 		} 
 		if (READ_BIT(keyNum, KEY_4)) {
 			uint8_t state = W25Q64_Check();
