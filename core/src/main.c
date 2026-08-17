@@ -42,7 +42,6 @@ int main(void)
 	SSD1306_Init();
 
 	AT24C64_App_Add();
-	// ESP8266_Init();
 	// uint32_t timer = HAL_GetTick();
 	
 	printf("f1 project new\n");
@@ -57,22 +56,21 @@ int main(void)
 		KeyNumTypeDef keyNum = Key_Read();
 		Modbus_Task();
 		RTC_Task();
-		// ESP8266_Task();
 
 		if (READ_BIT(keyNum, KEY_1)) {
 			for(uint8_t i = 0; i < 4; i++) {
 				W25Q64_EraseSector(i);
 			}
+			// if(keyNum = 2) {
+				// LED_BLUE_TOGGLE();
+			// }
 		}
 		if (READ_BIT(keyNum, KEY_2)) {
 			uint8_t state = AT24C64_Check();
 			printf("state=%d\n", state);
 		} 
 		if (READ_BIT(keyNum, KEY_3)) {
-			ESP8266_AT_Transmit("AT\r\n");
 
-			uint8_t state = ESP8266_AT_Receive("AT\r\n", 2000);
-			printf("state=%d\n", state);
 		} 
 		if (READ_BIT(keyNum, KEY_4)) {
 			uint8_t state = W25Q64_Check();

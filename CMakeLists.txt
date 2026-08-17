@@ -39,11 +39,9 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     core/bsp/at24c64.c
 
     core/mid/modbus.c
-    core/mid/esp8266.c
 
     core/app/modbus_app.c
     core/app/at24c64_app.c
-    core/app/esp8266_app.c
 )
 
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
